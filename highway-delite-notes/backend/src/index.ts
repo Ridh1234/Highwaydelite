@@ -16,20 +16,15 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(helmet());
 
-// Allow multiple origins (production + local dev)
-const allowedOrigins = [
-  process.env.FRONTEND_URL,                // primary configured frontend
-  'http://localhost:5173',                 // local dev (vite)
-  'https://notesapp-pearl-two.vercel.app'  // deployed Vercel frontend (fallback if not set in env)
-].filter(Boolean) as string[];
-
+// CORS: fully open (user requested). WARNING: Insecure for production.
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // non-browser or same-origin
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS: Origin not allowed'));
-  },
-  credentials: true
+  origin: (_origin, cb) => cb(null, true), // reflect any origin
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','Accept','Origin'],
+  exposedHeaders: ['Content-Type'],
+  credentials: false, // cannot use credentials with wildcard/any origin reflection safely here
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
